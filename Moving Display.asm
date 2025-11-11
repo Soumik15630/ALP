@@ -1,31 +1,22 @@
-// Input:   A string of 8 characters (defined by MVI B,08H)
-//          stored in memory starting at 2050H.
-// Output:  Writes one character at a time to memory 3000H.
-//          Loops infinitely, "scrolling" the 8-char string.
-// ----------------------------------------------------------------
-START:	   MVI B,08H	// Load B with count = 8 characters
-	   LXI H,2050H	// HL points to source string
-	   LXI D,3000H	// DE points to display/output location
+; Input:   8 characters stored starting at 2050H.
+; Output:  Writes one character at a time to 3000H, with a delay.
+;          Loops infinitely.
+; Depends: DELAY subroutine
+; ----------------------------------------------------------------
+START:	   MVI B,08H	; Load B with count = 8 characters
+	   LXI H,2050H	; HL points to source string (2050H)
+	   LXI D,3000H	; DE points to display location (3000H)
 
-SCROLL:	   PUSH B		// Save registers
-	   PUSH H
-	   PUSH D
-	   CALL DISP_CHAR
-	   CALL DELAY
-	   POP D
-	   POP H
-	   POP B
-	   INX H		// Move to next character
-	   DCR B		// Decrease count
-	   JNZ SCROLL	// Loop until all 8 characters displayed
-	   JMP START	// Re-initialize and loop infinitely
-
-// --- Subroutine: Display Character ---
-DISP_CHAR: MOV A,M		// A = [HL] (read data)
-	   STAX D		// Store A into [DE]
-	   RET
+SCROLL:	   MOV A,M		; Get character from source [HL]
+	   STAX D		; Store character at destination [DE]
+	   CALL DELAY	; Wait
 	   
-// --- Subroutine: Delay ---
+	   INX H		; Move to next character
+	   DCR B		; Decrease count
+	   JNZ SCROLL	; Loop until all 8 characters displayed
+	   JMP START	; Repeat the entire sequence
+
+; --- Subroutine: Delay ---
 DELAY:	   MVI B,0AH
 OUT_DEL:   MVI C,0FFH
 MID_DEL:   MVI D,0FFH
